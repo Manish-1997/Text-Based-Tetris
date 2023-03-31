@@ -40,6 +40,10 @@ class Piece:
 	def move_down(self):
 		self.y += 1
 
+	# Return current position of the piece
+	def current_pos(self):
+		return(self.x,self.y)
+
 
 class Block:
 
@@ -75,7 +79,7 @@ class Board:
                 if piece.shape[row][col] != " ":
                     self.board[y+row][x+col].value = piece.shape[row][col]
 
-    # Clear single completed row
+    # Clear single completed row and bring down above rows
     def clear_completed_row(self, row):
         for y in range(row, 0, -1):
             for x in range(self.width):
@@ -90,6 +94,7 @@ class Board:
 
 
 class Play:
+
 	# Start the game
 	def __init__(self):
 		self.board = Board()
@@ -97,22 +102,26 @@ class Play:
 
 	# Load the piece to be played with in the game
 	def load_piece(self):
-		pieceName = PIECES[random.randint(0,4)]
-		xaxis = random.randint(0,7)
+		pieceName = PIECES[random.randint(0,len(PIECES)-1)]
+		maxX = self.board.width - len(PIECES_MAP['line'][0])
+		xaxis = random.randint(0,maxX - 1)
 		self.piece = Piece(pieceName,xaxis,0)
 
 	# Take user input
 	def user_input(self):
+		print("Please chose one of the following option!")
+		print("<a> : move piece left and move one row down")
+		print("<d> : move piece right and move one row down")
+		print("<w> : rotate piece counter clockwise and move one row down")
+		print("<s> : rotate piece clockwise and move one row down")
+		print("<space> : no action and the piece moves one row down")
 		while True:
-			print("Please chose one of the following option!")
-			print("<a> : move piece left and move one row down")
-			print("<d> : move piece right and move one row down")
-			print("<w> : rotate piece counter clockwise and move one row down")
-			print("<s> : rotate piece clockwise and move one row down")
-			print("<space> : no action and the piece moves one row down")
 			userInput = input()
 			if userInput in ['a','d','w','s',' ']:
 				return userInput
+			else:
+				print("Your input '{}' is not in our options.".format(userInput))
+				print("Please select valid option again!")
 
 	# Make the user move
 	def load_input(self,userInput):
@@ -120,22 +129,28 @@ class Play:
 			if not self.board.collision(self.piece,self.piece.x - 1,self.piece.y) and not self.board.collision(self.piece,self.piece.x - 1,self.piece.y + 1):
 				self.piece.move_left()
 				self.piece.move_down()
+			else:
+				print("Invalid move. Collision detected!")
 		elif userInput == 'd': 
 			if not self.board.collision(self.piece,self.piece.x + 1,self.piece.y) and not self.board.collision(self.piece,self.piece.x + 1,self.piece.y + 1):
 				self.piece.move_right()
 				self.piece.move_down()
+			else:
+				print("Invalid move. Collision detected!")
 		elif userInput == 'w':
 			self.piece.rotate_anticlockwise() 
 			if not self.board.collision(self.piece,self.piece.x,self.piece.y) and not self.board.collision(self.piece,self.piece.x,self.piece.y + 1):
 				self.piece.move_down()
 			else:
 				self.piece.rotate_clockwise()
+				print("Invalid move. Collision detected!")
 		elif userInput == 's':
 			self.piece.rotate_clockwise() 
 			if not self.board.collision(self.piece,self.piece.x,self.piece.y) and not self.board.collision(self.piece,self.piece.x,self.piece.y + 1):
 				self.piece.move_down()
 			else:
 				self.piece.rotate_anticlockwise()
+				print("Invalid move. Collision detected!")
 		elif userInput == " ":
 			if not self.board.collision(self.piece,self.piece.x,self.piece.y + 1):
 				self.piece.move_down()
@@ -156,6 +171,7 @@ class Play:
 	def print_board(self):
 		dummyBoard = copy.deepcopy(self.board.board)
 		# Copy the tetrics piece onto dummy board for printing
+		print('-'*((self.board.width*2)-1))
 		for row in range(len(self.piece.shape)):
 			for col in range(len(self.piece.shape[0])):
 				if self.piece.shape[row][col] != " ":
@@ -184,17 +200,15 @@ class Play:
 			while game:
 				# Print the board
 				clear_output()
-				self.print_board()
-
-				# Take the user input and perform action
-				user_choice = self.user_input()
-				self.load_input(user_choice)
-			
+				self.print_board()			
 				# Check if tetric piece is settled in its position
-
 				if not self.check_moves_left():
 					game = False
 					self.board.add_piece(self.piece,self.piece.x,self.piece.y)
+					continue
+				# Take the user input and perform action
+				user_choice = self.user_input()
+				self.load_input(user_choice)
 
 if __name__ == "__main__":
 	play = Play()
