@@ -44,7 +44,6 @@ class Piece:
 	def current_pos(self):
 		return(self.x,self.y)
 
-
 class Block:
 
 	# A single block in the board
@@ -179,7 +178,6 @@ class Play:
 		# Print the dummy board
 		for y in range(self.board.length):
 			print(" ".join(list(map(lambda x : x.value,dummyBoard[y]))))
-
 
 	# Start the game
 	def game(self):
