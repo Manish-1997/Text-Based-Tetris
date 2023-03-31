@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from main import Piece,Block,Board,Play,PIECES,PIECES_MAP
 
 # Test class for Piece object
@@ -226,10 +227,61 @@ class TestBoard(unittest.TestCase):
 # Test class for Play object
 class TestPlay(unittest.TestCase):
 
+	# Load a random piece
 	def test_load_piece(self):
 		play = Play()
 		play.load_piece()
 		self.assertNotEqual(play.piece,None)
+
+	# Mocking the user input
+	@patch('main.input',return_value = 'a')
+	def test_user_input(self,value):
+		play = Play()
+		self.assertEqual(play.user_input(),'a')
+
+	# Loading the user input and move the piece
+	def test_load_input(self):
+		play = Play()
+		# Load a random piece
+		play.load_piece()
+		initialx,initialy = play.piece.current_pos()
+		play.load_input('a')
+		if initialx > 0:
+			self.assertEqual((initialx-1,initialy+1),play.piece.current_pos())
+
+	# Loading the invalid user input and move the piece
+	def test_invalid_load_input(self):
+		play = Play()
+		# Load a random piece
+		play.load_piece()
+		initialx,initialy = play.piece.current_pos()
+		play.load_input('q')
+		if initialx > 0:
+			self.assertEqual((initialx,initialy),play.piece.current_pos())
+
+	def test_negative_check_moves_left(self):
+		play = Play()
+		# Load a random piece
+		play.load_piece()
+		#Set the peice to bottom of the board
+		play.piece.x = 0
+		play.piece.y = play.board.length-1
+		self.assertFalse(play.check_moves_left())
+
+	def test_positive_check_moves_left(self):
+		play = Play()
+		# Load a random piece
+		play.load_piece()
+		self.assertTrue(play.check_moves_left())
+
+	def test_clear_completed_board(self):
+		play = Play()
+		# Creating a custom filled board with last row as complete
+		for col in range(play.board.width):
+			play.board.board[play.board.length-1][col].value = "#"
+
+		play.clear_completed_board()
+		self.assertNotEqual("#"*play.board.width,"".join(list(map(lambda x: x.value,play.board.board[play.board.length-1]))))
 
 
 
